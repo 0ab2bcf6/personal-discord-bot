@@ -1,0 +1,90 @@
+[project]
+name = "personal_discord_bot"
+requires-python = ">=3.12"
+description = "highly individualized discord bot."
+readme = "README.md"
+authors = [{name = "0ab2bcf6", email = "dummy@placeholder.de"}]
+classifiers = [
+    "License :: OSI Approved :: 0BSD",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12"
+]
+
+version = "0.9"
+
+license = {file = "LICENSE.txt"}
+
+keywords = ["template", "development"]
+
+dependencies = [
+    "aiohttp",
+    "async_timeout",
+    "PyYaml",
+    "PyNaCl",
+    "beautifulsoup4",
+    "discord.py",
+    "async-timeout",
+    "Requests",
+    "yt-dlp"
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy",
+    "pylint",
+    "flake8",
+    "pytest",
+    "types-PyYAML"
+]
+
+# build system
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# data, which should be included into the package must be listed here
+[tool.setuptools]
+package-data = {"*" = ["py.typed", "README.md", "LICENSE.txt", "*.pyi"]}
+
+# mypy settings
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_configs = true
+follow_imports_for_stubs = true
+warn_redundant_casts = true
+strict = true
+warn_unused_ignores = false
+
+# pylint settings
+
+[tool.pylint.MASTER]
+fail-under = 9.0
+
+[tool.pylint.BASIC]
+good-names = ["i", "j", "k", "_", "e", "f", "n", "N", "m",
+              "M", "q", "C", "A", "R", "d"]
+good-names-rgxs = "_?[xXyYzZ]\\d?_?"
+
+[tool.pylint.DESIGN]
+max-args = "8"
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+    "not-an-iterable"
+]
+
+# flake8 settings
+# flake8 is not actually supported yet, but will soon be
+[tool.flake8]
+extend-exclude = [
+    ".git",
+    ".gitignore",
+    "*.pot",
+    "*.py[co]",
+    "__pycache__",
+    "venv",
+    ".env"
+]

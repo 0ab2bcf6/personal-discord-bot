@@ -1,0 +1,38 @@
+# python specific files
+build/
+dist/
+venv/
+*.egg-info/
+*/*.egg-info
+*.egg
+*.py[cod]
+__pycache__/
+*/__pycache__/
+*.so
+
+# windows
+~*
+*~
+
+# vim
+*.swp
+*.swo
+*.orig
+tags
+*/tags
+
+# pytest
+.cache
+tests/plots/
+
+# mypy
+.mypy_cache/
+*/*.mypy_cache/
+*.nfs*
+*.temp
+
+testenv/
+
+src/personal_discord_bot/logs
+src/personal_discord_bot/logs/*
+src/personal_discord_bot/res

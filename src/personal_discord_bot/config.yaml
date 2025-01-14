@@ -1,0 +1,63 @@
+token: ""
+server_id: 111
+bot_admin:
+  - 222
+  - 333
+
+cogs:
+  monitor:
+    enabled: true
+    channel_id: 444
+    inactivity: true
+    messages: true
+    fixupx: true
+    roles_privileged:
+      - ""
+    roles_to_monitor:
+      - ""
+      - ""
+      - ""
+    roles_inactive:
+      - ""
+    roles_default:
+      - ""
+    inactivity_message:
+      - ""
+  tally:
+    enabled: true
+    channel_id: 999
+  movie:
+    enabled: true
+    path: "res/movies.db"
+    channel_id: 555
+  music:
+    enabled: false
+    channel_id: 666
+  poll:
+    enabled: true
+    channel_id: 777
+  reactionroles:
+    enabled: true
+    channel_id: 888
+    messages:
+      - text: "Stimmung!"
+        allow_multiple: false
+        reactions:
+          "😊": 
+            role: "Happy"
+            description: "Reagiere wenn du gut gelaunt bist!"
+          "😢": 
+            role: "Traurig"
+            description: "Reagiere, wenn du nicht drüber reden willst."
+      - text: "Intressen!"
+        allow_multiple: true
+        reactions:
+          "🎞️": 
+            role: "film"
+            description: "Filmabeeeend."
+          "♟️": 
+            role: "schach"
+            description: "Ab ans Schachbrett."
+          "⚽": 
+            role: "sportsball"
+            description: "Ja, Fußball schauen!"
