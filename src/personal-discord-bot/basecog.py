@@ -49,7 +49,7 @@ class BaseCog(commands.Cog):
                 "LoggingMiddleware cog not found. Ensure it is loaded first.")
 
         # Log successful setup
-        await self.logger.log_info(self, f"Setup completed for {self.__class__.__name__}")
+        await self.logger.log_info(self, "Setup completed")
 
     async def get_text_channel(self, channel_id: int) -> Optional[TextChannel]:
         """Retrieve and validate a TextChannel by ID.

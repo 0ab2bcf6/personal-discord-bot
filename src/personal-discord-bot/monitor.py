@@ -94,9 +94,6 @@ class Monitor(BaseCog):
             last_message = None
             for channel in self.guild.text_channels:
 
-                if self.bot.config.cogs["imgboard"].channel_id == channel.id:
-                    continue
-
                 fetch_message = await discord.utils.get(
                     channel.history(
                         limit=10000, after=four_weeks_ago, oldest_first=False
