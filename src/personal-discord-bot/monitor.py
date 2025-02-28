@@ -4,31 +4,37 @@ monitor.py
 
 """
 
+# Standard Library Imports
 import asyncio
-import random
 import re
-import requests
+from datetime import datetime, timedelta, timezone
+from typing import TYPE_CHECKING, Any, List, Optional
+from pathlib import Path
 
-from datetime import timezone, datetime, timedelta
-from typing import List
-
+# Third-Party Imports
 import discord
-# from bs4 import BeautifulSoup
-from discord import Message
+from discord import Message, TextChannel
 from discord.ext import commands, tasks
 
+# Local Application Imports
+from .basecog import BaseCog
 from .config import CogConfig
+from .logger import LoggingMiddleware
+
+# Conditional Typing Imports
+if TYPE_CHECKING:
+    from .bot import MyBot
+else:
+    MyBot = Any
 
 
-class Monitor(commands.Cog):
-    """a cog to monitor user (in-)activity on the server"""
+class Monitor(BaseCog):
+    """monitor user (in-)activity on the server"""
 
-    def __init__(self, bot, config: CogConfig) -> None:
-        self.bot = bot
-        self.logger = bot.logger
-        self.guild_id = bot.config.server_id
+    def __init__(self, bot: MyBot, config: CogConfig) -> None:
+        super().__init__(bot, config)
 
-        self._config: CogConfig = config
+        self._guild_id: int = bot.config.server_id
         self._inactivity: bool = self._config.inactivity
         self._channel_id: int = self._config.channel_id
         self._messages: bool = self._config.messages
@@ -37,12 +43,10 @@ class Monitor(commands.Cog):
         self._roles_to_monitor: List[str] = self._config.roles_to_monitor
         self._roles_inactive: List[str] = self._config.roles_inactive
         self._default_roles: List[str] = self._config.roles_default
-        self._inactive_message = "\n\n".join(self._config.inactivity_message)
-        self._inactive_message_id: int = 0
-
-        self.reply_messages = [
-            "Immer an den Embed denken, bitte!"
-        ]
+        self._path: Path = self._config.path
+        self._inactive_message: str = "\n\n".join(
+            self._config.inactivity_message)
+        self._inactive_message_data: Optional[int] = None
 
     async def _get_roles_by_name(self, roles_as_list: List[str]) -> List:
         """returns a list of discord roles"""
@@ -52,24 +56,22 @@ class Monitor(commands.Cog):
             if role is not None:
                 _list_roles.append(role)
             else:
-                self.logger.error(
-                    f"{self.__cog_name__}: role '{role_name}' not found in {self.guild}!"
-                )
+                await self.logger.log_error(self, f"role '{role_name}' not found in {self.guild}!")
         return _list_roles
 
     # Background task: check_inactive_users
-    @tasks.loop(hours=24)
+    @tasks.loop(hours=48)
     async def _check_inactive_users(self) -> None:
         """checks when a user last posted a message"""
 
         if self.guild is None:
-            self.logger.error(
-                f"{self.__cog_name__}: no valid guild {self.guild_id}!")
+            await self.logger.log_error(self, f"no valid guild {self._guild_id}!")
             return
 
         four_weeks_ago = datetime.now(timezone.utc) - timedelta(weeks=4)
         four_weeks_ago = four_weeks_ago.replace(tzinfo=None)
 
+        # Define the roles
         roles_to_monitor = await self._get_roles_by_name(
             self._roles_to_monitor
         )
@@ -81,7 +83,7 @@ class Monitor(commands.Cog):
         )
 
         for member in self.guild.members:
-            is_active = False
+            is_active: bool = False
 
             if member.id == self.bot.user.id:
                 continue
@@ -91,6 +93,10 @@ class Monitor(commands.Cog):
 
             last_message = None
             for channel in self.guild.text_channels:
+
+                if self.bot.config.cogs["imgboard"].channel_id == channel.id:
+                    continue
+
                 fetch_message = await discord.utils.get(
                     channel.history(
                         limit=10000, after=four_weeks_ago, oldest_first=False
@@ -113,10 +119,7 @@ class Monitor(commands.Cog):
                 or member_joined > four_weeks_ago
             )
 
-            self.logger.info(
-                f"{self.__cog_name__}: (@{member},{member.id}) activity status: "
-                f"{is_active}."
-            )
+            await self.logger.log_info(self, f"(@{member},{member.id}) activity status: {is_active}.")
 
             if not is_active:
                 # Remove roles
@@ -126,10 +129,7 @@ class Monitor(commands.Cog):
                         roles_removed.append(role.name)
                         await member.remove_roles(role)
 
-                self.logger.info(
-                    f"{self.__cog_name__}: (@{member},{member.id}) roles removed: "
-                    f"{roles_removed}."
-                )
+                # await self.logger.log_info(self, f"(@{member},{member.id}) roles removed: {roles_removed}.")
 
                 # Add roles
                 roles_assinged = []
@@ -139,32 +139,56 @@ class Monitor(commands.Cog):
                         roles_assinged.append(entry.name)
                         await member.add_roles(entry)
 
-                    self.logger.info(
-                        f"{self.__cog_name__}: (@{member},{member.id}) roles assigned: "
-                        f"{roles_assinged}."
-                    )
+                    # await self.logger.log_info(self, f"(@{member},{member.id}) roles assigned: {roles_assinged}.")
             # else:
             #     # If user is active, remove the roles
             #     for entry in roles_to_assign:
             #         if entry in member.roles:
             #             await member.remove_roles(entry)
 
-    @tasks.loop(hours=120)
+    @tasks.loop(hours=184)
     async def _check_inactive_message(self) -> None:
-        """checks if the inactive_message is still in the inactive channel"""
-        channel = self.bot.get_channel(self._channel_id)
+        """Checks if the inactive message is still in the last 20 messages."""
+        channel: Optional[TextChannel] = await self.get_text_channel(self._channel_id)
+        if not channel:
+            await self.logger.log_error(self, "Channel not found.")
+            return
 
-        messages = []
-        async for message in channel.history(limit=50):
-            messages.append(message)
+        # Load inactive message data (assumed to contain message ID)
+        self._inactive_message_data = await self.load_data_from_file(self._path) or None
 
+        if not self._inactive_message_data:
+            await self.logger.log_warning(self, "No inactive message ID found in data.")
+            await self._create_inactive_message(channel)
+            return
+
+        # Fetch recent messages (limit to 20)
+        try:
+            messages = [message async for message in channel.history(limit=20)]
+        except discord.HTTPException as e:
+            await self.logger.log_error(self, f"Failed to fetch channel history: {e}")
+            # if bad connection, check in next cycle
+            return
+
+        # Check if the stored message ID exists in recent messages
         for message in messages:
-            # if message.author == self.bot.user and message.content == self._inactive_message:
-            if message.author == self.bot.user and self._inactive_message_id == message.id:
-                break
-        else:
-            sent_message = await channel.send(self._inactive_message)
-            self._inactive_message_id = sent_message.id
+            if message.id == self._inactive_message_data and message.author == self.bot.user:
+                # no action needed
+                return
+
+        # message wasnt found
+        await self.logger.log_info(self, "Inactive message not found in last 20 messages, recreating.")
+        await self._create_inactive_message(channel)
+
+    async def _create_inactive_message(self, channel: TextChannel) -> None:
+        """Creates or recreates the inactive message and saves its ID."""
+        try:
+            new_message = await channel.send(self._inactive_message)
+            self._inactive_message_data = new_message.id
+            await self.save_data_to_file(self._inactive_message_data, self._path)
+            await self.logger.log_info(self, f"Created new inactive message with ID {new_message.id}.")
+        except discord.HTTPException as e:
+            await self.logger.log_error(self, f"Failed to create inactive message: {e}")
 
     @commands.Cog.listener()
     async def on_message(self, message: Message) -> None:
@@ -175,9 +199,7 @@ class Monitor(commands.Cog):
         if not self._messages:
             return
 
-        self.logger.info(
-            f"{self.__cog_name__}: (@{message.author.name},{message.author.id}) in (#{message.channel.id}): {message.content}"
-        )
+        await self.logger.log_info(self, f"(@{message.author},{message.author.id}) in (#{message.channel.id}): {message.content}")
 
         if self._fixupx:
             xcom_regex = r"https://x\.com/(\w+)/status/(\d+)"
@@ -189,10 +211,16 @@ class Monitor(commands.Cog):
                 username = match.group(1)
                 status_id = match.group(2)
 
+                # Create the new fixupx.com link
                 new_link = f"https://fixupx.com/{username}/status/{status_id}"
-                random_message = random.choice(self.reply_messages)
 
-                await message.reply(f"{random_message} {new_link}")
+                # Select a random reply message
+                # random_message = random.choice(self.reply_messages)
+
+                # Reply to the original message with the random message and modified link
+                await message.channel.send(f"{new_link}")
+                await asyncio.sleep(1)
+                await message.delete()
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
@@ -206,14 +234,13 @@ class Monitor(commands.Cog):
     async def on_ready(self) -> None:
         """execute when ready"""
         await self.bot.wait_until_ready()
-        self.guild = self.bot.get_guild(self.guild_id)
+        self.guild = self.bot.get_guild(self._guild_id)
 
         if self.guild is None:
-            self.logger.error(
-                f"{self.__cog_name__}: no valid guild {self.guild_id}!")
+            await self.logger.log_error(self, f"no valid guild {self._guild_id}!")
 
         if self._inactivity:
             self._check_inactive_users.start()
             self._check_inactive_message.start()
 
-        self.logger.info(f"{self.__cog_name__} loaded.")
+        await self.logger.log_info(self, "loaded.")

@@ -1,48 +1,35 @@
 #!/usr/bin/env python3
-# flake8: noqa: E501
-# pylint: skip-file
-# type: ignore
 """
 movie cog class
 """
 
+# Standard library imports
 import sqlite3
-
-from logging import Logger
+from sqlite3 import Connection, Cursor
 from pathlib import Path
-from typing import Dict
+from typing import TYPE_CHECKING, Any, Optional
+# Third-party imports
+from discord.ext import commands
 
-from discord.ext import commands, tasks
-
+# Local application/library specific imports
+from .basecog import BaseCog
 from .config import CogConfig
 
-# Absolute Path of current file
-# pylint: disable=invalid-name
-SCRIPT_DIR = Path(__file__).resolve().parent
+# Conditional Typing Imports
+if TYPE_CHECKING:
+    from .bot import MyBot
+else:
+    MyBot = Any
 
 
-class Movie(commands.Cog):
+class Movie(BaseCog):
     """movie cog"""
 
-    def __init__(self, bot, config: CogConfig) -> None:
-        self.bot = bot
-        self.logger: Logger = bot.logger
-        self._config: CogConfig = config
-
-        self.channel_id: int = self._config.channel_id
-
-        db_path = Path(SCRIPT_DIR, self._config.path)
-
-        try:
-            self.conn = sqlite3.connect(db_path)
-            self.cursor = self.conn.cursor()
-            self.logger.info(
-                f"{self.__cog_name__}: Connection to database {self._config.path} successful.")
-        except sqlite3.Error as e:
-            self.conn = None
-            self.logger.error(
-                f"{self.__cog_name__}: Error connecting to database {self._config.path}: {e}!"
-            )
+    def __init__(self, bot: MyBot, config: CogConfig) -> None:
+        super().__init__(bot, config)
+        self.db_path: Path = self._config.path
+        self.conn: Optional[Connection] = None
+        self.cursor: Optional[Cursor] = None
 
     @commands.command(name="film", aliases=['filme', 'movies', 'movie', 'movie_suggestion'], help="Lass Dir Filmvorschläge geben: !film [genre] [min. rating] [anzahl]")
     async def suggest_movies(
@@ -54,7 +41,7 @@ class Movie(commands.Cog):
     ) -> None:
         """suggest top n movies that fit the genre and mininum rating filters"""
 
-        if self.channel_id is None or ctx.channel.id != self.channel_id:
+        if self._config.channel_id is None or ctx.channel.id != self._config.channel_id:
             return  # ignore any commands not in the specific channel
 
         if not self._check_genre(genre):
@@ -116,4 +103,11 @@ class Movie(commands.Cog):
     async def on_ready(self) -> None:
         """execute when ready"""
         await self.bot.wait_until_ready()
-        self.logger.info(f"{self.__cog_name__} loaded.")
+        await self.logger.log_info(self, "loaded.")
+        try:
+            self.conn = sqlite3.connect(self.db_path)
+            self.cursor = self.conn.cursor()
+            await self.logger.log_info(self, f"Connection to database {self._config.path} successful.")
+        except sqlite3.Error as e:
+            self.conn = None
+            await self.logger.log_error(self, f"Error connecting to database {self._config.path}: {e}!")

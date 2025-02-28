@@ -5,32 +5,39 @@
 """
 poll cog class
 """
-import random
+# Standard library imports
 import asyncio
-from logging import Logger
-from typing import List
+import random
+from typing import TYPE_CHECKING, Any, List
+
+# Third-party imports
 import discord
 from discord.ext import commands
 
+# Local application imports
+from .basecog import BaseCog
 from .config import CogConfig
+from .logger import LoggingMiddleware
 
-class Poll(commands.Cog):
-    "A simple poll class"
+# Conditional typing imports
+if TYPE_CHECKING:
+    from .bot import MyBot
+else:
+    MyBot = Any
 
-    def __init__(self, bot, config: CogConfig) -> None:
-        self.bot = bot
-        self.logger: Logger = bot.logger
-        self._config: CogConfig = config
 
-        self.channel_id: int = self._config.channel_id
+class Poll(BaseCog):
+    "Simple Poll Class"
 
-        self._lot_entries = []
-        self.cooldown = False
+    def __init__(self, bot: MyBot, config: CogConfig) -> None:
+        super().__init__(bot, config)
+        self._lot_entries: List[str] = []
+        self.cooldown: bool = False
 
     @commands.command(name='los', aliases=["enter_lot", "enterlot"], help="Erstell ein Los: !los [eintrag]")
     async def enter_lot(self, ctx: commands.Context, entry: str, print_reply:bool = False) -> None:
 
-        if self.channel_id is None or ctx.channel.id != self.channel_id:
+        if self._config.channel_id is None or ctx.channel.id != self._config.channel_id:
             return  # ignore any commands not in the specific channel
 
         user = ctx.author
@@ -48,7 +55,7 @@ class Poll(commands.Cog):
     @commands.command(name='ziehen', aliases=["draw_lot", "drawlot"], help="Zieh ein Los.")
     async def draw_lot(self, ctx: commands.Context) -> None:
 
-        if self.channel_id is None or ctx.channel.id != self.channel_id:
+        if self._config.channel_id is None or ctx.channel.id != self._config.channel_id:
             return  # ignore any commands not in the specific channel
 
         if not self._lot_entries:
@@ -121,4 +128,5 @@ class Poll(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.logger.info(f"{self.__cog_name__} loaded.")
+        await self.bot.wait_until_ready()
+        await self.logger.log_info(self, "loaded.")

@@ -2,22 +2,23 @@
 """
 bot.py
 """
-
-from typing import Dict, List
-
+# Standard library imports
+from typing import List
 from logging import Logger
 
+# Third-party imports
 import discord
 from discord.ext import commands
 
+# Local application imports
 from .config import Config
-from .tally import Tally
 from .logger import LoggingMiddleware
 from .monitor import Monitor
-from .music import Music
 from .movie import Movie
+from .music import Music
 from .poll import Poll
 from .reactionroles import ReactionRoles
+from .tally import Tally
 
 
 class MyBot(commands.Bot):
@@ -35,10 +36,6 @@ class MyBot(commands.Bot):
         """setup cogs"""
         logger_cog = LoggingMiddleware(self)
         await self.add_cog(logger_cog)
-
-        if self.config.cogs["tally"].enabled:
-            tally_cog = Tally(self, self.config.cogs["tally"])
-            await self.add_cog(tally_cog)
 
         if self.config.cogs["monitor"].enabled:
             monitor_cog = Monitor(self, self.config.cogs["monitor"])
@@ -59,6 +56,10 @@ class MyBot(commands.Bot):
         if self.config.cogs["reactionroles"].enabled:
             reactionroles_cog = ReactionRoles(self, self.config.cogs["reactionroles"])
             await self.add_cog(reactionroles_cog)
+
+        if self.config.cogs["tally"].enabled:
+            tally_cog = Tally(self, self.config.cogs["tally"])
+            await self.add_cog(tally_cog)
 
     async def close(self) -> None:
         """close bot"""

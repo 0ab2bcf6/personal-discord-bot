@@ -54,10 +54,10 @@ cogs:
         reactions:
           "🎞️": 
             role: "film"
-            description: "Filmabeeeend."
+            description: "Definitiv bereit für Filmabend!"
           "♟️": 
             role: "schach"
-            description: "Ab ans Schachbrett."
+            description: "Ab ans Schachbrett!"
           "⚽": 
             role: "sportsball"
             description: "Ja, Fußball schauen!"

@@ -3,7 +3,7 @@ name = "personal_discord_bot"
 requires-python = ">=3.12"
 description = "highly individualized discord bot."
 readme = "README.md"
-authors = [{name = "0ab2bcf6", email = "dummy@placeholder.de"}]
+authors = [{name = "0ab2bcf6", email = "simonm96@gmx.de"}]
 classifiers = [
     "License :: OSI Approved :: 0BSD",
     "Programming Language :: Python",
@@ -25,7 +25,6 @@ dependencies = [
     "PyNaCl",
     "beautifulsoup4",
     "discord.py",
-    "async-timeout",
     "Requests",
     "yt-dlp"
 ]
