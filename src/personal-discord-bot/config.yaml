@@ -1,63 +1,86 @@
+# The bot's authentication token, leave empty if set via environment variable or elsewhere
+# change code in __main__.py to use environment variable
 token: ""
-server_id: 111
-bot_admin:
-  - 222
-  - 333
 
+# The Discord server (guild) ID where the bot operates
+server_id: 111
+
+# List of user IDs with special bot admin privileges
+bot_admin:
+  - 222  # First admin user ID
+  - 333  # Second admin user ID
+
+# Configuration for each cog (module) of the bot
 cogs:
+  # Monitor cog: Tracks user (in-)activity and related roles
   monitor:
-    enabled: true
-    channel_id: 444
-    inactivity: true
-    messages: true
-    fixupx: true
-    roles_privileged:
-      - ""
-    roles_to_monitor:
-      - ""
-      - ""
-      - ""
-    roles_inactive:
-      - ""
-    roles_default:
-      - ""
-    inactivity_message:
-      - ""
+    enabled: true          
+    channel_id: 444        # The Discord channel ID for cog-related output
+    inactivity: true       # Enable tracking of user inactivity
+    messages: true         # Enable message logging
+    fixupx: true           # Enable some fixup feature (specific to your bot)
+    roles_privileged:      # List of privileged role IDs or names
+      - ""                 # Placeholder (replace with actual role ID/name)
+    roles_to_monitor:      # Roles to monitor for activity
+      - ""                 
+    roles_inactive:        # Roles assigned to inactive users
+      - ""                 
+    roles_default:         # Default roles for users
+      - ""                 
+    inactivity_message:    # Messages sent for inactivity, multiple lines allowed
+      - ""                 
+
+  # HuggingFace cog: Integration with HuggingFace API for AI models
+  huggingface:
+    enabled: true          
+    api_url: "https://api-inference.huggingface.co/models/"  # Base URL for HuggingFace API
+    model: "meta-llama/Llama-3.2-1B-Instruct"               # Specific model to use
+
+  # Tally cog: Tracks counts or scores
   tally:
-    enabled: true
-    channel_id: 999
+    enabled: true          
+    channel_id: 999        
+
+  # Movie cog: Manages a movie database created from IMDB files
+  # queries need to be adjusted to the actual database schema
   movie:
-    enabled: true
-    path: "res/movies.db"
-    channel_id: 555
+    enabled: false          
+    path: "res/movies.db"  # File path to the movie database
+    channel_id: 555        # Channel ID for movie-related output
+
+  # Music cog: Handles music playback or related features
   music:
-    enabled: false
-    channel_id: 666
+    enabled: false          # (currently disabled)
+    channel_id: 666        
+
+  # Poll cog: Manages polls or voting
   poll:
-    enabled: true
-    channel_id: 777
+    enabled: true          
+    channel_id: 777       
+
+  # ReactionRoles cog: Assigns roles based on message reactions
   reactionroles:
-    enabled: true
-    channel_id: 888
-    messages:
-      - text: "Stimmung!"
-        allow_multiple: false
-        reactions:
-          "😊": 
-            role: "Happy"
-            description: "Reagiere wenn du gut gelaunt bist!"
-          "😢": 
+    enabled: true          
+    channel_id: 888        # Channel ID for reaction role messages
+    messages:              # List of messages with reaction role configurations
+      - text: "Stimmung!"  # The message text users will react to
+        allow_multiple: false  # Whether users can select multiple reactions
+        reactions:           # Mapping of reactions to roles
+          "😊":              # Reaction emoji
+            role: "Happy"    # Role assigned when this reaction is used
+            description: "Reagiere wenn du gut gelaunt bist!"  # Instruction for users
+          "😢":
             role: "Traurig"
             description: "Reagiere, wenn du nicht drüber reden willst."
-      - text: "Intressen!"
+      - text: "Interessen!"
         allow_multiple: true
         reactions:
-          "🎞️": 
+          "🎞️":
             role: "film"
             description: "Definitiv bereit für Filmabend!"
-          "♟️": 
+          "♟️":
             role: "schach"
             description: "Ab ans Schachbrett!"
-          "⚽": 
-            role: "sportsball"
+          "⚽":
+            role: "fußball"
             description: "Ja, Fußball schauen!"

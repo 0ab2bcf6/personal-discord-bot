@@ -33,6 +33,7 @@ tests/plots/
 
 testenv/
 
-src/personal_discord_bot/logs
-src/personal_discord_bot/logs/*
-src/personal_discord_bot/res
+src/personal-discord-bot/logs
+src/personal-discord-bot/logs/*
+src/personal-discord-bot/res
+src/personal-discord-bot/res/*

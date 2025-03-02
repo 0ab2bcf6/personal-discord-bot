@@ -1,5 +1,5 @@
 [project]
-name = "personal_discord_bot"
+name = "personal-discord-bot"
 requires-python = ">=3.12"
 description = "highly individualized discord bot."
 readme = "README.md"
@@ -21,6 +21,7 @@ keywords = ["template", "development"]
 dependencies = [
     "aiohttp",
     "async_timeout",
+    "httpx",
     "PyYaml",
     "PyNaCl",
     "beautifulsoup4",

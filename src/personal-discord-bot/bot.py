@@ -12,6 +12,7 @@ from discord.ext import commands
 
 # Local application imports
 from .config import Config
+from .huggingface import HuggingFace
 from .logger import LoggingMiddleware
 from .monitor import Monitor
 from .movie import Movie
@@ -20,6 +21,7 @@ from .poll import Poll
 from .reactionroles import ReactionRoles
 from .tally import Tally
 
+# TODO include cogs and respective configs as a dictionary and handle missing cogs
 
 class MyBot(commands.Bot):
     """mybot"""
@@ -36,6 +38,10 @@ class MyBot(commands.Bot):
         """setup cogs"""
         logger_cog = LoggingMiddleware(self)
         await self.add_cog(logger_cog)
+
+        if self.config.cogs["huggingface"].enabled:
+            huggingface_cog = HuggingFace(self, self.config.cogs["huggingface"])
+            await self.add_cog(huggingface_cog)
 
         if self.config.cogs["monitor"].enabled:
             monitor_cog = Monitor(self, self.config.cogs["monitor"])
