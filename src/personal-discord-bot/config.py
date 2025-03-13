@@ -58,4 +58,4 @@ class CogConfig:
             else:
                 setattr(self, key, value)
 
-        self.enabled: bool = data.get("enabled", bool)
+        self.enabled: bool = data.get("enabled", False)
