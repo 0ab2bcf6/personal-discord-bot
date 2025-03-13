@@ -32,9 +32,15 @@ cogs:
 
   # HuggingFace cog: Integration with HuggingFace API for AI models
   huggingface:
-    enabled: true          
-    api_url: "https://api-inference.huggingface.co/models/"  # Base URL for HuggingFace API
-    model: "meta-llama/Llama-3.2-1B-Instruct"               # Specific model to use
+    enabled: true
+    token: ""
+    api_url: "https://api-inference.huggingface.co/models/" # Base URL for HuggingFace API
+    text_to_text:
+      enabled: true
+      model: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B" # Specific model to use
+    text_to_image:
+      enabled: true
+      model: "dalle-mini/dalle-mini" # Specific model to use
 
   # Tally cog: Tracks counts or scores
   tally:
@@ -51,6 +57,7 @@ cogs:
   # Music cog: Handles music playback or related features
   music:
     enabled: false          # (currently disabled)
+    path: "cookies.txt"
     channel_id: 666        
 
   # Poll cog: Manages polls or voting
