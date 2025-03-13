@@ -49,19 +49,19 @@ class ReactionRoles(BaseCog):
         for message_id in self.message_data.keys():
             try:
                 await channel.fetch_message(message_id)
-                # If message is found, keep all_messages_available as True (no change needed)
             except discord.NotFound:
                 await self.logger.log_warning(self, f"Message {message_id} not found, creating a new one.")
                 all_messages_available = False
 
+        # If any messages are missing or never existed, recreate them
         if not all_messages_available:
-            # Delete old messages
             for message_id in self.message_data.keys():
                 try:
                     message = await channel.fetch_message(message_id)
                     await message.delete()
                     await self.logger.log_info(self, f"Deleted orphaned message {message_id}.")
                 except (discord.NotFound, discord.HTTPException):
+                    # Ignore if already gone or if deletion fails
                     pass
 
             # Clear the old message IDs
@@ -70,21 +70,34 @@ class ReactionRoles(BaseCog):
             # Create new reaction role messages
             for entry in self._config.messages:
                 message_id = await self.create_reaction_message(channel, entry)
-                if message_id:
+                if message_id
                     self.message_data[message_id] = entry
 
             # Save the new message IDs to file
             await self.save_data_to_file(self.message_data, self._config.path)
 
     async def create_reaction_message(self, channel: TextChannel, entry: Dict[str, Any]) -> int:
-        """Creates a reaction role message and returns its ID."""
+        """Creates a reaction role message and returns its ID.
 
+        Args:
+            channel: The TextChannel where the message will be sent.
+            entry: Dictionary containing message details (text, reactions, etc.).
+
+        Returns:
+            int: The ID of the created message.
+
+        Raises:
+            discord.Forbidden: If the bot lacks permissions to send messages or add reactions.
+            discord.HTTPException: If sending the message or adding reactions fails.
+        """
+        # Create embed with reaction role information
         embed = Embed(
             title=entry.get('text', 'Reaction Roles'),
             description="Reagiere für eine Rolle",
             color=discord.Color.blue()
         )
 
+        # Add fields for each reaction-role pair efficiently
         reactions = entry.get('reactions', {})
         for emoji, data in reactions.items():
             role_name = data.get('role', 'Unknown Role')
@@ -105,6 +118,7 @@ class ReactionRoles(BaseCog):
         except discord.HTTPException as e:
             await self.logger.log_error(self, f"Failed to create reaction message: {str(e)}")
 
+        # Store the message ID in self.message_data if not already present
         if bot_message.id not in self.message_data:
             self.message_data[bot_message.id] = entry
 
@@ -112,7 +126,6 @@ class ReactionRoles(BaseCog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: RawReactionActionEvent) -> None:
-
         if payload.message_id not in self.message_data:
             return
 
@@ -121,7 +134,7 @@ class ReactionRoles(BaseCog):
             return
 
         member = guild.get_member(payload.user_id)
-        if not member or member.bot:  # Ignore bots
+        if not member or member.bot:
             return
 
         message_config = self.message_data[payload.message_id]
@@ -135,18 +148,44 @@ class ReactionRoles(BaseCog):
         # Get and assign role
         role_name = role_data['role']
         role = discord.utils.get(guild.roles, name=role_name)
-        if role and role < guild.me.top_role:
-            try:
-                if not message_config.get('allow_multiple', True):
-                    roles_to_remove = [
-                        r for r in member.roles if r.name in reaction_roles.values()]
-                    if roles_to_remove:
-                        await member.remove_roles(*roles_to_remove)
+        if not role or role >= guild.me.top_role:
+            return
 
-                await member.add_roles(role, reason="Reaction role assignment")
-            except discord.Forbidden:
-                await self.logger.log_error(self, f"Bot lacks permissions to assign role {role_name}.")
-                pass
+        try:
+            if not message_config.get('allow_multiple', True):
+                # Get the message object to manage reactions
+                channel = guild.get_channel(payload.channel_id)
+                if not channel:
+                    return
+                message = await channel.fetch_message(payload.message_id)
+
+                # Remove existing roles and their corresponding reactions
+                roles_to_remove = []
+                reactions_to_remove = []
+                for existing_emoji, data in reaction_roles.items():
+                    if existing_emoji != emoji:
+                        existing_role = discord.utils.get(
+                            guild.roles, name=data['role'])
+                        if existing_role in member.roles:
+                            roles_to_remove.append(existing_role)
+                            reactions_to_remove.append(existing_emoji)
+
+                # Remove roles from member
+                if roles_to_remove:
+                    await member.remove_roles(*roles_to_remove, reason="Exclusive reaction role cleanup")
+
+                # Remove other reactions from the message for this user
+                for reaction_emoji in reactions_to_remove:
+                    reaction = discord.utils.get(
+                        message.reactions, emoji=reaction_emoji)
+                    if reaction:
+                        await reaction.remove(member)
+
+            # Add the new role
+            await member.add_roles(role, reason="Reaction role assignment")
+
+        except discord.Forbidden:
+            await self.logger.log_error(self, f"Bot lacks permissions to assign role {role_name}.")
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: RawReactionActionEvent) -> None:
@@ -173,11 +212,10 @@ class ReactionRoles(BaseCog):
         # Get and remove role
         role_name = role_data['role']
         role = discord.utils.get(guild.roles, name=role_name)
-        if role and role < guild.me.top_role:  # Check if bot can remove role
+        if role and role < guild.me.top_role:
             try:
                 await member.remove_roles(role, reason="Reaction role removal")
             except discord.Forbidden:
-                await self.logger.log_error(self, f"Bot lacks permissions to remove role {role_name}.")
                 pass
 
     @commands.Cog.listener()

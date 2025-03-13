@@ -109,7 +109,7 @@ class HuggingFace(BaseCog):
             await self.logger.log_error(self, f"Unexpected error: {str(e)}")
             return None
 
-    @commands.command(name="imagine", aliases=["img", "draw", "imaginiere"])
+    @commands.command(name="imagine", aliases=["img", "draw"])
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def imagine_command(self, ctx: commands.Context, *, prompt: str) -> None:
         """Handles the !imagine command to generate a fun image."""
@@ -129,7 +129,7 @@ class HuggingFace(BaseCog):
         else:
             await ctx.send("Oops, couldn’t make an image this time!")
 
-    @commands.command(name="chat", aliases=["hey", "explain", "sag"])
+    @commands.command(name="chat", aliases=["hey", "explain"])
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def chat_command(self, ctx: commands.Context, *, prompt: str) -> None:
         """Handles the !chat command to talk with the AI."""

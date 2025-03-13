@@ -1,6 +1,6 @@
 # The bot's authentication token, leave empty if set via environment variable or elsewhere
 # change code in __main__.py to use environment variable
-token: ""
+token: "paste-discord-token-here"
 
 # The Discord server (guild) ID where the bot operates
 server_id: 111
@@ -33,7 +33,7 @@ cogs:
   # HuggingFace cog: Integration with HuggingFace API for AI models
   huggingface:
     enabled: true
-    token: ""
+    token: "paste-api-token-here"
     api_url: "https://api-inference.huggingface.co/models/" # Base URL for HuggingFace API
     text_to_text:
       enabled: true
@@ -56,7 +56,7 @@ cogs:
 
   # Music cog: Handles music playback or related features
   music:
-    enabled: false          # (currently disabled)
+    enabled: true          # (currently disabled)
     path: "cookies.txt"
     channel_id: 666        
 
