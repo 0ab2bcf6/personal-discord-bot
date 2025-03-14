@@ -34,59 +34,60 @@ class Poll(BaseCog):
         self._lot_entries: List[str] = []
         self.cooldown: bool = False
 
-    @commands.command(name='los', aliases=["enter_lot", "enterlot"], help="Erstell ein Los: !los [eintrag]")
-    async def enter_lot(self, ctx: commands.Context, entry: str, print_reply:bool = False) -> None:
+    @commands.command(name='lot', aliases=["enter_lot", "enterlot"], help="Enter a lot for polling: !lot [entry] [optional: print_reply]")
+    async def enter_lot(self, ctx: commands.Context, entry: str, print_reply: bool = False) -> None:
 
         if self._config.channel_id is None or ctx.channel.id != self._config.channel_id:
-            return  # ignore any commands not in the specific channel
+            return  # Ignore commands outside the designated channel
 
         user = ctx.author
         lot_entry = (user, entry)
 
         if not entry:
-            await ctx.send(f"Bitte das Los beschriften {user.mention}, danke.")
+            await ctx.send(f"{user.mention}, please provide an entry message for the lot. Thank you!")
             return
 
         self._lot_entries.append(lot_entry)
 
         if print_reply:
-            await ctx.send(f"Dein Los ist jetzt in der Urne, {user.mention}!")
+            await ctx.send(f"Your lot has been entered into the urn, {user.mention}!")
 
-    @commands.command(name='ziehen', aliases=["draw_lot", "drawlot"], help="Zieh ein Los.")
+    @commands.command(name='ziehen', aliases=["draw_lot", "drawlot"], help="Draw a random lot.")
     async def draw_lot(self, ctx: commands.Context) -> None:
 
         if self._config.channel_id is None or ctx.channel.id != self._config.channel_id:
-            return  # ignore any commands not in the specific channel
+            return  # Ignore commands outside the designated channel
 
         if not self._lot_entries:
-            await ctx.send("Gerade sind keine Lose in der Urne. Du kannst aber gerne !enter_lot schreiben.")
+            await ctx.send("There are currently no lots in the urn. Feel free to enter one using !enter_lot.")
             return
 
         winning_lot = random.choice(self._lot_entries)
-        await ctx.send(f"Ebin für: {winning_lot[1]}, {winning_lot[0].mention}!")
+        await ctx.send(f"And the winner is: {winning_lot[1]}, congratulations {winning_lot[0].mention}!")
         self._lot_entries.clear()
 
     async def start_cooldown(self) -> None:
-        await asyncio.sleep(120)
+        await asyncio.sleep(60)
         self.cooldown = False
 
-    @commands.command(name="umfrage", aliases=["open_poll", "poll", "openpoll"], help="Erstell eine Umfrage: !umfrage [frage] [dauer min.] [opt1] [opt2] ...")
+    @commands.command(name="poll", aliases=["openpoll"], help="Create a Poll: !poll [question] [duration in min.] [option1] [option2] ...")
     async def open_poll(self, ctx: commands.Context, question: str, timer: int, *options: str) -> None:
-        """open a poll with """
+        """Create a poll with a specified question, duration, and options."""
 
         if not question:
-            await ctx.send("Bitte eine Frage formulieren, danke.")
+            await ctx.send("You must provide a question for the poll!")
             return
 
-        if timer > 172800/60:
-            await ctx.send("Bitte keine Umfragen über 2 Tage machen, danke.")
+        if timer > 172800 / 60:
+            await ctx.send("Poll duration cannot exceed 2 days (2880 minutes)!")
+            return
 
         if len(options) < 2:
-            await ctx.send("Bitte mindestens 2 Optionen angeben, danke.")
+            await ctx.send("Please provide at least two options for the poll!")
             return
 
         if len(options) > 10:
-            await ctx.send("Bitte nicht mehr als 10 Optionen angeben, danke.")
+            await ctx.send("Polls can have a maximum of 10 options!")
             return
 
         if not self.cooldown:

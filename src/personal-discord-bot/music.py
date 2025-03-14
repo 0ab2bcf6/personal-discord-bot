@@ -106,11 +106,11 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.dislikes = data.get('dislike_count')
         self.stream_url = data.get('url')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '**{0.title}** by **{0.uploader}**'.format(self)
 
     @classmethod
-    async def create_source(cls, ctx: commands.Context, config_path: str, search: str, *, loop: asyncio.BaseEventLoop = None):
+    async def create_source(cls, ctx: commands.Context, config_path: str, search: str, *, loop: asyncio.BaseEventLoop = None)-> Any:
         # set path/to/cookies.txt dynamically
         ytdl_options = cls.YTDL_OPTIONS.copy()
         ytdl_options['cookiefile'] = config_path
@@ -159,22 +159,22 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return cls(ctx, discord.FFmpegPCMAudio(info['url'], **cls.FFMPEG_OPTIONS), data=info)
 
     @staticmethod
-    def parse_duration(duration: int):
+    def parse_duration(duration: int) -> str:
         minutes, seconds = divmod(duration, 60)
         hours, minutes = divmod(minutes, 60)
         days, hours = divmod(hours, 24)
 
-        duration = []
+        duration_as_str: List[str] = []
         if days > 0:
-            duration.append('{} days'.format(days))
+            duration_as_str.append('{} days'.format(days))
         if hours > 0:
-            duration.append('{} hours'.format(hours))
+            duration_as_str.append('{} hours'.format(hours))
         if minutes > 0:
-            duration.append('{} minutes'.format(minutes))
+            duration_as_str.append('{} minutes'.format(minutes))
         if seconds > 0:
-            duration.append('{} seconds'.format(seconds))
+            duration_as_str.append('{} seconds'.format(seconds))
 
-        return ', '.join(duration)
+        return ', '.join(duration_as_str)
 
 
 class Song:
@@ -199,25 +199,26 @@ class Song:
 
 
 class SongQueue(asyncio.Queue):
-    def __getitem__(self, item):
+    def __getitem__(self, item: int | slice) -> 'Song' | List['Song']:
         if isinstance(item, slice):
             return list(itertools.islice(self._queue, item.start, item.stop, item.step))
         else:
-            return self._queue[item]
+            song: Union[Song, List[Song]] = self._queue[item]
+            return song
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator['Song']:
         return self._queue.__iter__()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.qsize()
 
-    def clear(self):
+    def clear(self) -> None:
         self._queue.clear()
 
-    def shuffle(self):
+    def shuffle(self) -> None:
         random.shuffle(self._queue)
 
-    def remove(self, index: int):
+    def remove(self, index: int) -> None:
         del self._queue[index]
 
 

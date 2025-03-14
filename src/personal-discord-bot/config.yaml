@@ -1,34 +1,32 @@
 # The bot's authentication token, leave empty if set via environment variable or elsewhere
 # change code in __main__.py to use environment variable
 token: "paste-discord-token-here"
-
 # The Discord server (guild) ID where the bot operates
-server_id: 111
-
+server_id: 1111111111111111
 # List of user IDs with special bot admin privileges
 bot_admin:
-  - 222  # First admin user ID
-  - 333  # Second admin user ID
+  - 1111111111111111 # First admin user ID
+  - 1111111111111111 # Second admin user ID
 
 # Configuration for each cog (module) of the bot
 cogs:
   # Monitor cog: Tracks user (in-)activity and related roles
   monitor:
-    enabled: true          
-    channel_id: 444        # The Discord channel ID for cog-related output
-    inactivity: true       # Enable tracking of user inactivity
-    messages: true         # Enable message logging
-    fixupx: true           # Enable some fixup feature (specific to your bot)
-    roles_privileged:      # List of privileged role IDs or names
-      - ""                 # Placeholder (replace with actual role ID/name)
-    roles_to_monitor:      # Roles to monitor for activity
-      - ""                 
-    roles_inactive:        # Roles assigned to inactive users
-      - ""                 
-    roles_default:         # Default roles for users
-      - ""                 
-    inactivity_message:    # Messages sent for inactivity, multiple lines allowed
-      - ""                 
+    enabled: true
+    channel_id: 1111111111111111 # The Discord channel ID for cog-related output
+    inactivity: true # Enable tracking of user inactivity
+    messages: true # Enable message logging
+    fixupx: true # Enable some fixup feature (specific to your bot)
+    roles_privileged: # List of privileged role IDs or names
+      - "" # Placeholder (replace with actual role ID/name)
+    roles_to_monitor: # Roles to monitor for activity
+      - ""
+    roles_inactive: # Roles assigned to inactive users
+      - ""
+    roles_default: # Default roles for users
+      - ""
+    inactivity_message: # Messages sent for inactivity, multiple lines allowed
+      - ""
 
   # HuggingFace cog: Integration with HuggingFace API for AI models
   huggingface:
@@ -44,38 +42,38 @@ cogs:
 
   # Tally cog: Tracks counts or scores
   tally:
-    enabled: true          
-    channel_id: 999        
+    enabled: true
+    channel_id: 1111111111111111
 
   # Movie cog: Manages a movie database created from IMDB files
   # queries need to be adjusted to the actual database schema
   movie:
-    enabled: false          
-    path: "res/movies.db"  # File path to the movie database
-    channel_id: 555        # Channel ID for movie-related output
+    enabled: false
+    path: "res/movies.db" # File path to the movie database
+    channel_id: 1111111111111111 # Channel ID for movie-related output
 
   # Music cog: Handles music playback or related features
   music:
-    enabled: true          # (currently disabled)
+    enabled: true # (currently disabled)
     path: "cookies.txt"
-    channel_id: 666        
+    channel_id: 1111111111111111
 
   # Poll cog: Manages polls or voting
   poll:
-    enabled: true          
-    channel_id: 777       
+    enabled: true
+    channel_id: 1111111111111111
 
   # ReactionRoles cog: Assigns roles based on message reactions
   reactionroles:
-    enabled: true          
-    channel_id: 888        # Channel ID for reaction role messages
-    messages:              # List of messages with reaction role configurations
-      - text: "Stimmung!"  # The message text users will react to
-        allow_multiple: false  # Whether users can select multiple reactions
-        reactions:           # Mapping of reactions to roles
-          "😊":              # Reaction emoji
-            role: "Happy"    # Role assigned when this reaction is used
-            description: "Reagiere wenn du gut gelaunt bist!"  # Instruction for users
+    enabled: true
+    channel_id: 1111111111111111 # Channel ID for reaction role messages
+    messages: # List of messages with reaction role configurations
+      - text: "Stimmung!" # The message text users will react to
+        allow_multiple: false # Whether users can select multiple reactions
+        reactions: # Mapping of reactions to roles
+          "😊": # Reaction emoji
+            role: "Happy" # Role assigned when this reaction is used
+            description: "Reagiere wenn du gut gelaunt bist!" # Instruction for users
           "😢":
             role: "Traurig"
             description: "Reagiere, wenn du nicht drüber reden willst."

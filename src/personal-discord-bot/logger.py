@@ -23,7 +23,7 @@ class LoggingMiddleware(commands.Cog):
         self.bot: MyBot = bot
         self.logger: Logger = bot.logger
 
-    @commands.command(name="set", aliases=["setch", "setchannel", "set_ch", "set_channel"], help="Leg den Output Channel für eine Funktion fest.")
+    @commands.command(name="set", aliases=["setch", "setchannel", "set_ch", "set_channel"], help="Set output channel for specific cog.")
     async def set_channel(self, ctx: commands.Context, cog_name: str) -> None:
         """set output channel for specified cog"""
 

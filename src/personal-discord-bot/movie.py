@@ -31,7 +31,7 @@ class Movie(BaseCog):
         self.conn: Optional[Connection] = None
         self.cursor: Optional[Cursor] = None
 
-    @commands.command(name="film", aliases=['filme', 'movies', 'movie', 'movie_suggestion'], help="Lass Dir Filmvorschläge geben: !film [genre] [min. rating] [anzahl]")
+    @commands.command(name="movie", aliases=['movies', 'movie_suggestion'], help="Suggests a Movie: !film [genre] [min. rating] [count]")
     async def suggest_movies(
         self,
         ctx: commands.Context,
