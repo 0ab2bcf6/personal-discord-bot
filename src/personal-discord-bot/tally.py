@@ -32,7 +32,7 @@ class Tally(BaseCog):
         self._depot_users: Dict[int, int] = {}
 
     @commands.command()
-    async def tally(self, ctx: commands.Context, target: discord.Member) -> None:
+    async def tally(self, ctx: commands.Context, target: commands.MemberConverter) -> None:
         """send message to channel with tally of ctx author"""
 
         if not self._depot_users:
@@ -55,7 +55,7 @@ class Tally(BaseCog):
             await ctx.send(f"{user.mention} hasn't had any negative marks yet.")
 
     @commands.command()
-    async def add_strich(self, ctx: commands.Context, user: discord.Member) -> None:
+    async def add_strich(self, ctx: commands.Context, user: commands.MemberConverter) -> None:
         """Add a token to the mentioned user's tally"""
 
         if user == None:
