@@ -16,7 +16,7 @@ cogs:
     channel_id: 1111111111111111 # The Discord channel ID for cog-related output
     inactivity: true # Enable tracking of user inactivity
     messages: true # Enable message logging
-    fixupx: true # Enable some fixup feature (specific to your bot)
+    fixupx: true # fix x.com embeds automatically
     roles_privileged: # List of privileged role IDs or names
       - "" # Placeholder (replace with actual role ID/name)
     roles_to_monitor: # Roles to monitor for activity
@@ -26,7 +26,8 @@ cogs:
     roles_default: # Default roles for users
       - ""
     inactivity_message: # Messages sent for inactivity, multiple lines allowed
-      - ""
+      - "Hello inactive Users"
+      - "it came to our attention that ..."
 
   # HuggingFace cog: Integration with HuggingFace API for AI models
   huggingface:
@@ -43,6 +44,7 @@ cogs:
   # Tally cog: Tracks counts or scores
   tally:
     enabled: true
+    path: "res/tally.yaml"
     channel_id: 1111111111111111
 
   # Movie cog: Manages a movie database created from IMDB files

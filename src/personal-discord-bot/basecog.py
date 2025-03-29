@@ -78,28 +78,9 @@ class BaseCog(commands.Cog):
         :param file_path: Path where the YAML file should be saved
         """
         try:
-            # Ensure file_path is a Path object
-            file_path = Path(file_path)
-
-            # Ensure parent directory exists
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-
-            # Create a temporary file in the same directory
-            tmp_path = file_path.parent / f"tmp_{file_path.stem}.yaml"
-
-            try:
-                with tmp_path.open('w', encoding='utf-8') as temp_file:
-                    yaml.dump(data, temp_file)
-
-                # Remove the old file if it exists
-                file_path.unlink(missing_ok=True)
-
-                # Atomic file move
-                tmp_path.replace(file_path)
-            finally:
-                # Clean up temp file if it still exists
-                if tmp_path.exists():
-                    tmp_path.unlink(missing_ok=True)
+            # Write data directly to the file
+            with file_path.open('w', encoding='utf-8') as yaml_file:
+                yaml.dump(data, yaml_file)
 
             await self.logger.log_info(self, f"Data written to {file_path}.")
         except Exception as e:
